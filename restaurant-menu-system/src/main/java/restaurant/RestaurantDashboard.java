@@ -3,6 +3,7 @@ package restaurant;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -15,6 +16,7 @@ public class RestaurantDashboard extends JFrame {
     private Color orangeColor = new Color(255, 102, 0);
     private Color whiteColor = Color.WHITE;
     private Color checkoutColor = new Color(239, 23, 23);
+    private List<MenuItem> selectedItems = new ArrayList<>();
 
     public RestaurantDashboard() {
         setUndecorated(true);
@@ -32,7 +34,7 @@ public class RestaurantDashboard extends JFrame {
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 3));
         buttonPanel.setPreferredSize(new Dimension(289, buttonPanel.getPreferredSize().height));
 
-        // Menu button with inverted colors
+        // Menu button
         JButton menuButton = new JButton("Menu");
         styleButton(menuButton, whiteColor, orangeColor, 48, 150, false);
         menuButton.addActionListener(e -> cardLayout.show(cardPanel, "Welcome"));
@@ -58,7 +60,16 @@ public class RestaurantDashboard extends JFrame {
         // Checkout button
         JButton checkoutButton = new JButton("Checkout");
         styleButton(checkoutButton, checkoutColor, whiteColor, 24, 70, true);
-        checkoutButton.addActionListener(e -> cardLayout.show(cardPanel, "Checkout"));
+        checkoutButton.addActionListener(e -> {
+            Order currentOrder = new Order("OrderID"); // Replace "OrderID" with actual ID logic
+            for (MenuItem selectedItem : selectedItems) {
+                currentOrder.addItem(selectedItem);
+            }
+
+            // Now you can use currentOrder to generate a receipt and show it in the
+            // checkout panel
+            // ... rest of the checkout logic ...
+        });
         buttonPanel.add(createSpacer());
         buttonPanel.add(checkoutButton);
         buttonPanel.add(createSpacer());
@@ -119,6 +130,9 @@ public class RestaurantDashboard extends JFrame {
             JLabel quantityLabel = new JLabel("Quantity: ");
             JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1)); // Spinner with a range from
                                                                                            // 0 to 100 and step 1
+            quantitySpinner.addChangeListener(e -> {
+                item.setQuantity((Integer) quantitySpinner.getValue());
+            });
             quantityPanel.add(quantityLabel);
             quantityPanel.add(quantitySpinner);
             itemPanel.add(quantityPanel);
@@ -127,6 +141,13 @@ public class RestaurantDashboard extends JFrame {
             JCheckBox purchaseCheckbox = new JCheckBox("Purchase");
             purchaseCheckbox.setBackground(whiteColor);
             purchaseCheckbox.setAlignmentX(Component.CENTER_ALIGNMENT);
+            purchaseCheckbox.addActionListener(e -> {
+                if (purchaseCheckbox.isSelected() && item.getQuantity() > 0) {
+                    selectedItems.add(item);
+                } else {
+                    selectedItems.remove(item);
+                }
+            });
             itemPanel.add(purchaseCheckbox);
 
             panel.add(itemPanel);
@@ -145,12 +166,67 @@ public class RestaurantDashboard extends JFrame {
     }
 
     private JPanel createCheckoutPanel() {
-        JPanel checkoutPanel = new JPanel(new GridBagLayout());
+        JPanel checkoutPanel = new JPanel();
+        checkoutPanel.setLayout(new BorderLayout());
         checkoutPanel.setBackground(checkoutColor);
-        JLabel checkoutLabel = new JLabel("Checkout");
-        checkoutLabel.setForeground(whiteColor);
-        checkoutLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        checkoutPanel.add(checkoutLabel);
+
+        // ScrollPane for order breakdown
+        JTextArea orderBreakdown = new JTextArea();
+        orderBreakdown.setEditable(false); // The receipt should not be editable directly
+        JScrollPane scrollPane = new JScrollPane(orderBreakdown);
+        checkoutPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // Panel for VAT, Subtotal, and Total Payment
+        JPanel paymentPanel = new JPanel(new GridLayout(3, 2, 5, 5)); // Use GridLayout for labels and text fields
+        paymentPanel.setBackground(checkoutColor);
+
+        JLabel vatLabel = new JLabel("VAT (₱):");
+        JTextField vatField = new JTextField("0", 10);
+        vatField.setEditable(false);
+
+        JLabel subtotalLabel = new JLabel("Subtotal (₱):");
+        JTextField subtotalField = new JTextField("0", 10);
+        subtotalField.setEditable(false);
+
+        JLabel totalPaymentLabel = new JLabel("Total Payment (₱):");
+        JTextField totalPaymentField = new JTextField("0", 10);
+        totalPaymentField.setEditable(false);
+
+        paymentPanel.add(vatLabel);
+        paymentPanel.add(vatField);
+        paymentPanel.add(subtotalLabel);
+        paymentPanel.add(subtotalField);
+        paymentPanel.add(totalPaymentLabel);
+        paymentPanel.add(totalPaymentField);
+
+        checkoutPanel.add(paymentPanel, BorderLayout.SOUTH);
+
+        // Panel for buttons
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(4, 1, 5, 5)); // Stack buttons vertically
+        buttonPanel.setBackground(checkoutColor);
+
+        JButton placeOrderButton = new JButton("Place Order");
+        placeOrderButton.setBackground(Color.GREEN);
+
+        JButton printReceiptButton = new JButton("Print Receipt");
+        printReceiptButton.setBackground(Color.RED);
+
+        JButton cancelOrderButton = new JButton("Cancel Order");
+        cancelOrderButton.setBackground(Color.ORANGE);
+
+        JButton exitButton = new JButton("Exit");
+        exitButton.setBackground(Color.YELLOW);
+
+        // Add buttons to the panel
+        buttonPanel.add(placeOrderButton);
+        buttonPanel.add(printReceiptButton);
+        buttonPanel.add(cancelOrderButton);
+        buttonPanel.add(exitButton);
+
+        // Add the button panel to the right side of the checkout panel
+        checkoutPanel.add(buttonPanel, BorderLayout.EAST);
+
         return checkoutPanel;
     }
 
