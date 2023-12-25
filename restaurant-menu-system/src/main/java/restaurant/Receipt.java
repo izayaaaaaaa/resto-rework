@@ -31,15 +31,7 @@ public class Receipt {
                 .append(order.getOrderId())
                 .append("\n===================================================\n\n")
                 .append("Item Name:\t\t\t\tPrice(₱):\n")
-                .append(order.getOrderDetails())
-                .append("\nSubtotal:\t\t\t")
-                .append(String.format("%.2f", subtotal))
-                .append("\nVAT:\t\t\t")
-                .append(String.format("%.2f", VAT))
-                .append("\nTotal:\t\t\t")
-                .append(String.format("%.2f", total))
-                .append("\n");
-
+                .append(order.getOrderDetails());
         return receipt.toString();
     }
 

@@ -3,6 +3,7 @@ package restaurant;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.print.PrinterException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -18,6 +19,10 @@ public class RestaurantDashboard extends JFrame {
     private Color checkoutColor = new Color(239, 23, 23);
     private List<MenuItem> selectedItems = new ArrayList<>();
     private JTextArea orderBreakdown = new JTextArea();
+    private JTextField vatField;
+    private JTextField subtotalField;
+    private JTextField totalPaymentField;
+    private List<JSpinner> quantitySpinners = new ArrayList<>();
 
     public RestaurantDashboard() {
         setUndecorated(true);
@@ -64,7 +69,6 @@ public class RestaurantDashboard extends JFrame {
         checkoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Create a new order with a unique order ID
                 Order currentOrder = new Order("456489"); // Replace with actual logic for generating unique IDs
 
                 // Add selected items to the order
@@ -76,7 +80,16 @@ public class RestaurantDashboard extends JFrame {
                 Receipt receipt = new Receipt(currentOrder);
                 orderBreakdown.setText(receipt.printReceipt());
 
-                // Switch to the checkout panel to display the receipt
+                // Calculate subtotal, VAT, and total
+                double subtotal = currentOrder.calculateTotal();
+                double VAT = receipt.getTax(subtotal);
+                double total = subtotal + VAT;
+
+                // Update the text fields
+                subtotalField.setText(String.format("%.2f", subtotal));
+                vatField.setText(String.format("%.2f", VAT));
+                totalPaymentField.setText(String.format("%.2f", total));
+
                 cardLayout.show(cardPanel, "Checkout");
             }
         });
@@ -140,6 +153,7 @@ public class RestaurantDashboard extends JFrame {
             JLabel quantityLabel = new JLabel("Quantity: ");
             JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1)); // Spinner with a range from
                                                                                            // 0 to 100 and step 1
+            quantitySpinners.add(quantitySpinner); // Add the spinner to the list
             quantitySpinner.addChangeListener(e -> {
                 item.setQuantity((Integer) quantitySpinner.getValue());
             });
@@ -190,15 +204,15 @@ public class RestaurantDashboard extends JFrame {
         paymentPanel.setBackground(checkoutColor);
 
         JLabel vatLabel = new JLabel("VAT (₱):");
-        JTextField vatField = new JTextField("0", 10);
+        vatField = new JTextField("0", 10);
         vatField.setEditable(false);
 
         JLabel subtotalLabel = new JLabel("Subtotal (₱):");
-        JTextField subtotalField = new JTextField("0", 10);
+        subtotalField = new JTextField("0", 10);
         subtotalField.setEditable(false);
 
         JLabel totalPaymentLabel = new JLabel("Total Payment (₱):");
-        JTextField totalPaymentField = new JTextField("0", 10);
+        totalPaymentField = new JTextField("0", 10);
         totalPaymentField.setEditable(false);
 
         paymentPanel.add(vatLabel);
@@ -217,15 +231,102 @@ public class RestaurantDashboard extends JFrame {
 
         JButton placeOrderButton = new JButton("Place Order");
         placeOrderButton.setBackground(Color.GREEN);
+        placeOrderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (selectedItems.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Please select an item first before placing order.");
+                } else {
+                    // Create a new order and add selected items
+                    Order currentOrder = new Order("456489"); // Replace with actual logic for generating unique IDs
+                    for (MenuItem selectedItem : selectedItems) {
+                        currentOrder.addItem(selectedItem);
+                    }
+                    Receipt receipt = new Receipt(currentOrder);
+
+                    double subtotal = currentOrder.calculateTotal();
+                    double tax = receipt.getTax(subtotal);
+                    double total = subtotal + tax;
+
+                    // Append tax, subtotal, and total to the JTextArea
+                    orderBreakdown.append("\n \t\t==========================\n"
+                            + "\t\t Tax: \t" + String.format("%.2f", tax) + "\n"
+                            + "\t\t Subtotal: \t" + String.format("%.2f", subtotal) + "\n"
+                            + "\t\t Total: \t" + String.format("%.2f", total) + "\n"
+                            + " ===================================================\n\n"
+                            + "\t            OFFICIAL RECEIPT\n"
+                            + "\t THANK YOU AND COME AGAIN");
+
+                    // Update the text fields
+                    vatField.setText(String.format("%.2f", tax));
+                    subtotalField.setText(String.format("%.2f", subtotal));
+                    totalPaymentField.setText(String.format("%.2f", total));
+
+                    // Disable the 'Place Order' button to prevent duplicate orders
+                    placeOrderButton.setEnabled(false);
+                }
+            }
+        });
 
         JButton printReceiptButton = new JButton("Print Receipt");
         printReceiptButton.setBackground(Color.RED);
+        printReceiptButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    boolean complete = orderBreakdown.print();
+                    if (complete) {
+                        // Inform the user that the print was successful
+                        JOptionPane.showMessageDialog(null, "Receipt Printed");
+                    } else {
+                        // Inform the user that the print was cancelled
+                        JOptionPane.showMessageDialog(null, "Printing Cancelled");
+                    }
+                } catch (PrinterException pe) {
+                    // Handle the printer exception
+                    JOptionPane.showMessageDialog(null, "Printing Failed: " + pe.getMessage());
+                }
+            }
+        });
 
         JButton cancelOrderButton = new JButton("Cancel Order");
         cancelOrderButton.setBackground(Color.ORANGE);
+        cancelOrderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // ... existing cancellation logic ...
+
+                // Reset all spinners
+                for (JSpinner spinner : quantitySpinners) {
+                    spinner.setValue(0);
+                }
+
+                // Clear the selected items list
+                selectedItems.clear();
+
+                // Reset the JTextArea and text fields
+                orderBreakdown.setText("");
+                vatField.setText("0");
+                subtotalField.setText("0");
+                totalPaymentField.setText("0");
+
+                // Re-enable the 'Place Order' button if needed
+                placeOrderButton.setEnabled(true);
+
+                // Refresh the UI if necessary
+                cardPanel.revalidate();
+                cardPanel.repaint();
+            }
+        });
 
         JButton exitButton = new JButton("Exit");
         exitButton.setBackground(Color.YELLOW);
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
 
         // Add buttons to the panel
         buttonPanel.add(placeOrderButton);

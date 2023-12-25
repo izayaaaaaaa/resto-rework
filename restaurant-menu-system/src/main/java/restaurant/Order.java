@@ -60,8 +60,4 @@ public class Order {
     public String getOrderId() {
         return orderId;
     }
-
-    public void generateReceipt() {
-        // Implementation for generating a receipt
-    }
 }
