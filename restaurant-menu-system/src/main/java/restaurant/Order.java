@@ -30,6 +30,37 @@ public class Order {
         return total;
     }
 
+    public String getOrderDetails() {
+        StringBuilder details = new StringBuilder();
+        int index = 1;
+        for (MenuItem item : orderItems) {
+            if (item.getQuantity() > 0) {
+                details.append(index++)
+                        .append(". ")
+                        .append(item.getName())
+                        .append("\t\t")
+                        .append(String.format("%.2f", item.getPrice() * item.getQuantity()))
+                        .append("\n");
+            }
+        }
+        return details.toString();
+    }
+
+    // Getter for orderDate
+    public LocalDate getOrderDate() {
+        return orderDate;
+    }
+
+    // Getter for orderTime
+    public LocalTime getOrderTime() {
+        return orderTime;
+    }
+
+    // Getter for orderId
+    public String getOrderId() {
+        return orderId;
+    }
+
     public void generateReceipt() {
         // Implementation for generating a receipt
     }

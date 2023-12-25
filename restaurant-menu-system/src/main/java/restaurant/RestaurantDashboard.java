@@ -17,6 +17,7 @@ public class RestaurantDashboard extends JFrame {
     private Color whiteColor = Color.WHITE;
     private Color checkoutColor = new Color(239, 23, 23);
     private List<MenuItem> selectedItems = new ArrayList<>();
+    private JTextArea orderBreakdown = new JTextArea();
 
     public RestaurantDashboard() {
         setUndecorated(true);
@@ -60,15 +61,24 @@ public class RestaurantDashboard extends JFrame {
         // Checkout button
         JButton checkoutButton = new JButton("Checkout");
         styleButton(checkoutButton, checkoutColor, whiteColor, 24, 70, true);
-        checkoutButton.addActionListener(e -> {
-            Order currentOrder = new Order("OrderID"); // Replace "OrderID" with actual ID logic
-            for (MenuItem selectedItem : selectedItems) {
-                currentOrder.addItem(selectedItem);
-            }
+        checkoutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Create a new order with a unique order ID
+                Order currentOrder = new Order("456489"); // Replace with actual logic for generating unique IDs
 
-            // Now you can use currentOrder to generate a receipt and show it in the
-            // checkout panel
-            // ... rest of the checkout logic ...
+                // Add selected items to the order
+                for (MenuItem selectedItem : selectedItems) {
+                    currentOrder.addItem(selectedItem);
+                }
+
+                // Create a receipt for the current order
+                Receipt receipt = new Receipt(currentOrder);
+                orderBreakdown.setText(receipt.printReceipt());
+
+                // Switch to the checkout panel to display the receipt
+                cardLayout.show(cardPanel, "Checkout");
+            }
         });
         buttonPanel.add(createSpacer());
         buttonPanel.add(checkoutButton);
@@ -171,7 +181,6 @@ public class RestaurantDashboard extends JFrame {
         checkoutPanel.setBackground(checkoutColor);
 
         // ScrollPane for order breakdown
-        JTextArea orderBreakdown = new JTextArea();
         orderBreakdown.setEditable(false); // The receipt should not be editable directly
         JScrollPane scrollPane = new JScrollPane(orderBreakdown);
         checkoutPanel.add(scrollPane, BorderLayout.CENTER);
