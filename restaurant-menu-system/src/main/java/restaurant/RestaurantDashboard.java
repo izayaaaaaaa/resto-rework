@@ -4,7 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.PrinterException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -23,6 +25,8 @@ public class RestaurantDashboard extends JFrame {
     private JTextField subtotalField;
     private JTextField totalPaymentField;
     private List<JSpinner> quantitySpinners = new ArrayList<>();
+    private JLabel jLabelDate;
+    private JLabel jLabelTime;
 
     public RestaurantDashboard() {
         setUndecorated(true);
@@ -97,8 +101,6 @@ public class RestaurantDashboard extends JFrame {
         buttonPanel.add(checkoutButton);
         buttonPanel.add(createSpacer());
 
-        add(buttonPanel, BorderLayout.WEST);
-
         // Welcome card
         cardPanel.add(createWelcomePanel(), "Welcome");
         cardPanel.setBackground(whiteColor);
@@ -107,7 +109,9 @@ public class RestaurantDashboard extends JFrame {
         cardPanel.add(createCheckoutPanel(), "Checkout");
 
         // Set the welcome card as the initial view
-        cardLayout.show(cardPanel, "Welcome");
+        // cardLayout.show(cardPanel, "Welcome");
+
+        add(buttonPanel, BorderLayout.WEST);
         add(cardPanel, BorderLayout.CENTER);
 
         cardPanel.setBackground(orangeColor);
@@ -182,11 +186,49 @@ public class RestaurantDashboard extends JFrame {
     private JPanel createWelcomePanel() {
         JPanel welcomePanel = new JPanel(new GridBagLayout());
         welcomePanel.setBackground(orangeColor);
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.anchor = GridBagConstraints.NORTH;
+
         JLabel welcomeLabel = new JLabel("Welcome to Our Restaurant!");
         welcomeLabel.setForeground(whiteColor);
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
         welcomePanel.add(welcomeLabel);
+
+        welcomePanel.add(welcomeLabel, constraints);
+
+        jLabelDate = new JLabel();
+        jLabelTime = new JLabel();
+
+        // Display the date and time
+        showDate();
+        showTime();
+
+        constraints.anchor = GridBagConstraints.CENTER;
+        constraints.weighty = 1;
+
+        welcomePanel.add(jLabelDate, constraints);
+        welcomePanel.add(jLabelTime, constraints);
+
         return welcomePanel;
+    }
+
+    public void showTime() {
+        new Timer(0, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                Date d = new Date();
+                SimpleDateFormat s = new SimpleDateFormat("hh:mm a");
+                jLabelTime.setText(s.format(d));
+            }
+        }).start();
+    }
+
+    public void showDate() {
+        Date d = new Date();
+        SimpleDateFormat s = new SimpleDateFormat("EEEE, MM/dd/yyyy");
+        jLabelDate.setText(s.format(d));
     }
 
     private JPanel createCheckoutPanel() {
