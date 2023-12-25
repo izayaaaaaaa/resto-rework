@@ -3,6 +3,11 @@ package restaurant;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+import javax.swing.border.EmptyBorder;
 
 public class RestaurantDashboard extends JFrame {
     private CardLayout cardLayout = new CardLayout();
@@ -14,6 +19,7 @@ public class RestaurantDashboard extends JFrame {
     public RestaurantDashboard() {
         setUndecorated(true);
         createUI();
+        createMenuItems(); // Populate UI with menu items
     }
 
     private void createUI() {
@@ -23,16 +29,13 @@ public class RestaurantDashboard extends JFrame {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.setBackground(whiteColor);
-        // Add an empty border to the buttonPanel to create the right side gap
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 3));
-        // Set the preferred width of the buttonPanel
         buttonPanel.setPreferredSize(new Dimension(289, buttonPanel.getPreferredSize().height));
 
         // Menu button with inverted colors
         JButton menuButton = new JButton("Menu");
         styleButton(menuButton, whiteColor, orangeColor, 48, 150, false);
         menuButton.addActionListener(e -> cardLayout.show(cardPanel, "Welcome"));
-        // buttonPanel.add(createSpacer());
         buttonPanel.add(menuButton);
         buttonPanel.add(createSpacer());
 
@@ -66,27 +69,6 @@ public class RestaurantDashboard extends JFrame {
         cardPanel.add(createWelcomePanel(), "Welcome");
         cardPanel.setBackground(whiteColor);
 
-        // Category cards
-        cardPanel.add(
-                createItemsPanel(
-                        new String[] { "Spaghetti Bolognese", "Cheesy Lasagna", "Carbonara", "Vegetarian Pasta" }),
-                "Pasta");
-        cardPanel.add(
-                createItemsPanel(
-                        new String[] { "Chicken Burger", "Cheese Burger", "Double Patty Burger", "Veggie Burger" }),
-                "Burgers");
-        cardPanel.add(
-                createItemsPanel(new String[] { "Pepperoni Pizza", "Cheese Pizza", "Mushroom Pizza", "Pesto Pizza" }),
-                "Pizzas");
-        cardPanel.add(
-                createItemsPanel(
-                        new String[] { "Chocolate Cake", "Berry Cheesecake", "Cookies & Cream", "Creme Brulee" }),
-                "Desserts");
-        cardPanel.add(
-                createItemsPanel(
-                        new String[] { "Chocolate Milkshake", "Caramel Frappe", "Iced Tea", "Cafe Americano" }),
-                "Drinks");
-
         // Checkout card
         cardPanel.add(createCheckoutPanel(), "Checkout");
 
@@ -94,24 +76,60 @@ public class RestaurantDashboard extends JFrame {
         cardLayout.show(cardPanel, "Welcome");
         add(cardPanel, BorderLayout.CENTER);
 
-        // Set the background of cardPanel
         cardPanel.setBackground(orangeColor);
 
-        // Set the initial size
         setSize(new Dimension(1350, 791));
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    private JPanel createItemsPanel(String[] items) {
-        JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
+    private JPanel createItemsPanel(List<MenuItem> items) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(0, 2, 10, 10)); // Adjust grid layout rows and columns as needed
         panel.setBackground(orangeColor);
-        for (String item : items) {
-            JLabel itemLabel = new JLabel(item, SwingConstants.CENTER);
-            itemLabel.setOpaque(true);
-            itemLabel.setBackground(whiteColor); // Set the background of the item label to white
-            itemLabel.setFont(new Font("Arial", Font.BOLD, 20)); // Set the font
-            panel.add(itemLabel);
+
+        for (MenuItem item : items) {
+            JPanel itemPanel = new JPanel();
+            itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
+            itemPanel.setBackground(whiteColor);
+            itemPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+            // Load, resize, and add the image
+            try {
+                Image img = ImageIO.read(new File(item.getPhotoPath()));
+                ImageIcon imageIcon = new ImageIcon(img.getScaledInstance(250, 150, Image.SCALE_SMOOTH));
+                JLabel imageLabel = new JLabel(imageIcon);
+                imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                itemPanel.add(imageLabel);
+            } catch (IOException e) {
+                e.printStackTrace();
+                // Handle the exception or display a placeholder image
+            }
+
+            // Add the name label
+            JLabel nameLabel = new JLabel(item.getName() + " (" + item.getPrice() + ")", SwingConstants.CENTER);
+            nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            itemPanel.add(nameLabel);
+
+            // Quantity panel
+            JPanel quantityPanel = new JPanel();
+            quantityPanel.setLayout(new BoxLayout(quantityPanel, BoxLayout.X_AXIS));
+            quantityPanel.setBackground(whiteColor);
+            JLabel quantityLabel = new JLabel("Quantity: ");
+            JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1)); // Spinner with a range from
+                                                                                           // 0 to 100 and step 1
+            quantityPanel.add(quantityLabel);
+            quantityPanel.add(quantitySpinner);
+            itemPanel.add(quantityPanel);
+
+            // Purchase checkbox
+            JCheckBox purchaseCheckbox = new JCheckBox("Purchase");
+            purchaseCheckbox.setBackground(whiteColor);
+            purchaseCheckbox.setAlignmentX(Component.CENTER_ALIGNMENT);
+            itemPanel.add(purchaseCheckbox);
+
+            panel.add(itemPanel);
         }
         return panel;
     }
@@ -133,7 +151,6 @@ public class RestaurantDashboard extends JFrame {
         checkoutLabel.setForeground(whiteColor);
         checkoutLabel.setFont(new Font("Arial", Font.BOLD, 24));
         checkoutPanel.add(checkoutLabel);
-        // You can add more components to this panel as needed
         return checkoutPanel;
     }
 
@@ -150,19 +167,58 @@ public class RestaurantDashboard extends JFrame {
         button.setBackground(bgColor);
         button.setForeground(fgColor);
         button.setFont(new Font("Arial", Font.BOLD, fontSize));
-        button.setBorderPainted(false); // Remove the border from the button
-        button.setFocusPainted(false); // Remove the focus border from the button
-        button.setBorder(null); // Set the border to null
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setBorder(null);
 
         if (isCheckout) {
-            // Specific size for checkout button
             button.setPreferredSize(new Dimension(195, height));
             button.setMaximumSize(new Dimension(195, height));
         } else {
-            // Default behavior for other buttons
             button.setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
             button.setPreferredSize(new Dimension(button.getPreferredSize().width, height));
         }
+    }
+
+    // generate the menu items via the menu item factory
+    private void createMenuItems() {
+        MenuItemFactory factory = new MenuItemFactory();
+
+        Category pasta = new Category("Pasta");
+        pasta.addItem(
+                factory.createMenuItem("Spaghetti Bolognese", 149.00, "src/main/java/photos/a_spag bolognese.jpg"));
+        pasta.addItem(factory.createMenuItem("Cheesy Lasagna", 169.00, "src/main/java/photos/c_lasagna.jpg"));
+        pasta.addItem(factory.createMenuItem("Carbonara", 159.00, "src/main/java/photos/c_carbonara.jpg"));
+        pasta.addItem(factory.createMenuItem("Vegetarian Pasta", 149.00, "src/main/java/photos/b_vegetaian pasta.jpg"));
+        cardPanel.add(createItemsPanel(pasta.getItems()), "Pasta");
+
+        Category burgers = new Category("Burgers");
+        burgers.addItem(factory.createMenuItem("Chicken Burger", 69.00, "src/main/java/photos/d_chicken burger.jpg"));
+        burgers.addItem(factory.createMenuItem("Cheese Burger", 59.00, "src/main/java/photos/f_cheese burger.jpg"));
+        burgers.addItem(factory.createMenuItem("Double Patty Burger", 89.00, "src/main/java/photos/f_doublepatty.jpg"));
+        burgers.addItem(factory.createMenuItem("Veggie Burger", 59.00, "src/main/java/photos/e_veggie burger.jpg"));
+        cardPanel.add(createItemsPanel(burgers.getItems()), "Burgers");
+
+        Category pizzas = new Category("Pizzas");
+        pizzas.addItem(factory.createMenuItem("Pepperoni Pizza", 169.00, "src/main/java/photos/g_pepperoni pizza.jpg"));
+        pizzas.addItem(factory.createMenuItem("Cheese Pizza", 159.00, "src/main/java/photos/h_cheese pizza.jpg"));
+        pizzas.addItem(factory.createMenuItem("Mushroom Pizza", 179.00, "src/main/java/photos/i_mushroom.jpg"));
+        pizzas.addItem(factory.createMenuItem("Pesto Pizza", 149.00, "src/main/java/photos/i_pesto pizza.jpg"));
+        cardPanel.add(createItemsPanel(pizzas.getItems()), "Pizzas");
+
+        Category desserts = new Category("Desserts");
+        desserts.addItem(factory.createMenuItem("Chocolate Cake", 150.00, "src/main/java/photos/j_choco cake.jpg"));
+        desserts.addItem(factory.createMenuItem("Berry Cheesecake", 120.00, "src/main/java/photos/k_cheesecake.jpg"));
+        desserts.addItem(factory.createMenuItem("Cookies & Cream", 70.00, "src/main/java/photos/l_ice cream.jpg"));
+        desserts.addItem(factory.createMenuItem("Creme Brulee", 60.00, "src/main/java/photos/l_cremebrulee.jpg"));
+        cardPanel.add(createItemsPanel(desserts.getItems()), "Desserts");
+
+        Category drinks = new Category("Drinks");
+        drinks.addItem(factory.createMenuItem("Chocolate Milkshake", 90.00, "src/main/java/photos/m_milkshake.jpg"));
+        drinks.addItem(factory.createMenuItem("Caramel Frappe", 85.00, "src/main/java/photos/n_frappe.jpg"));
+        drinks.addItem(factory.createMenuItem("Iced Tea", 30.00, "src/main/java/photos/o_iced tea.jpg"));
+        drinks.addItem(factory.createMenuItem("Cafe Americano", 60.00, "src/main/java/photos/p_americano.jpg"));
+        cardPanel.add(createItemsPanel(drinks.getItems()), "Drinks");
     }
 
     public static void main(String[] args) {
