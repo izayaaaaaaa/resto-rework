@@ -1,3 +1,4 @@
+// TODO: IMPLEMENT LATER FOR BETTER CODE READABILITY (line 447)
 package restaurant;
 
 import javax.swing.*;
@@ -19,6 +20,7 @@ public class RestaurantDashboard extends JFrame {
     private Color orangeColor = new Color(255, 102, 0);
     private Color whiteColor = Color.WHITE;
     private Color checkoutColor = new Color(239, 23, 23);
+    private Color paymentColor = new Color(204, 204, 204);
     private List<MenuItem> selectedItems = new ArrayList<>();
     private JTextArea orderBreakdown = new JTextArea();
     private JTextField vatField;
@@ -46,7 +48,7 @@ public class RestaurantDashboard extends JFrame {
 
         // Menu button
         JButton menuButton = new JButton("Menu");
-        styleButton(menuButton, whiteColor, orangeColor, 48, 150, false);
+        styleMenuButton(menuButton, whiteColor, orangeColor, 48, 150, false);
         menuButton.addActionListener(e -> cardLayout.show(cardPanel, "Welcome"));
         buttonPanel.add(menuButton);
         buttonPanel.add(createSpacer());
@@ -55,7 +57,7 @@ public class RestaurantDashboard extends JFrame {
         String[] categories = { "Pasta", "Burgers", "Pizzas", "Desserts", "Drinks" };
         for (String category : categories) {
             JButton button = new JButton(category);
-            styleButton(button, orangeColor, whiteColor, 36, 80, false);
+            styleMenuButton(button, orangeColor, whiteColor, 36, 80, false);
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -69,7 +71,7 @@ public class RestaurantDashboard extends JFrame {
 
         // Checkout button
         JButton checkoutButton = new JButton("Checkout");
-        styleButton(checkoutButton, checkoutColor, whiteColor, 24, 70, true);
+        styleMenuButton(checkoutButton, checkoutColor, whiteColor, 24, 70, true);
         checkoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -232,18 +234,38 @@ public class RestaurantDashboard extends JFrame {
     }
 
     private JPanel createCheckoutPanel() {
-        JPanel checkoutPanel = new JPanel();
-        checkoutPanel.setLayout(new BorderLayout());
-        checkoutPanel.setBackground(checkoutColor);
+        JPanel checkoutPanel = new JPanel(new GridBagLayout());
+        checkoutPanel.setBackground(whiteColor);
+        checkoutPanel.setBorder(BorderFactory.createLineBorder(orangeColor, 5));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        // Create a filler panel for the left column
+        JPanel fillerPanel = new JPanel();
+        fillerPanel.setBackground(whiteColor);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        checkoutPanel.add(fillerPanel, gbc);
+
+        // Panel to hold the order breakdown and paymentPanel
+        JPanel contentPanel = new JPanel(new BorderLayout());
 
         // ScrollPane for order breakdown
-        orderBreakdown.setEditable(false); // The receipt should not be editable directly
+        orderBreakdown.setEditable(false);
+        orderBreakdown.setLineWrap(true);
+        orderBreakdown.setWrapStyleWord(true);
+        orderBreakdown.setBorder(BorderFactory.createLineBorder(paymentColor, 5));
         JScrollPane scrollPane = new JScrollPane(orderBreakdown);
-        checkoutPanel.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        scrollPane.setPreferredSize(new Dimension(395, 695));
+        scrollPane.setMinimumSize(new Dimension(395, 695));
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Panel for VAT, Subtotal, and Total Payment
-        JPanel paymentPanel = new JPanel(new GridLayout(3, 2, 5, 5)); // Use GridLayout for labels and text fields
-        paymentPanel.setBackground(checkoutColor);
+        JPanel paymentPanel = new JPanel(new GridLayout(3, 2, 5, 5));
+        paymentPanel.setBackground(paymentColor);
 
         JLabel vatLabel = new JLabel("VAT (₱):");
         vatField = new JTextField("0", 10);
@@ -264,15 +286,26 @@ public class RestaurantDashboard extends JFrame {
         paymentPanel.add(totalPaymentLabel);
         paymentPanel.add(totalPaymentField);
 
-        checkoutPanel.add(paymentPanel, BorderLayout.SOUTH);
+        contentPanel.add(paymentPanel, BorderLayout.SOUTH);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        checkoutPanel.add(contentPanel, gbc);
 
         // Panel for buttons
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(4, 1, 5, 5)); // Stack buttons vertically
-        buttonPanel.setBackground(checkoutColor);
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+        buttonPanel.setBackground(Color.WHITE);
+
+        // Custom font for buttons
+        Font buttonPanelBtnsFont = new Font("Arial", Font.BOLD, 24);
 
         JButton placeOrderButton = new JButton("Place Order");
-        placeOrderButton.setBackground(Color.GREEN);
+        placeOrderButton.setBackground(new Color(51, 153, 0));
+        placeOrderButton.setForeground(whiteColor);
+        placeOrderButton.setPreferredSize(new Dimension(185, 50));
+        placeOrderButton.setFont(buttonPanelBtnsFont);
+        placeOrderButton.setBorderPainted(false);
         placeOrderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -311,7 +344,11 @@ public class RestaurantDashboard extends JFrame {
         });
 
         JButton printReceiptButton = new JButton("Print Receipt");
-        printReceiptButton.setBackground(Color.RED);
+        printReceiptButton.setBackground(orangeColor);
+        printReceiptButton.setForeground(whiteColor);
+        printReceiptButton.setPreferredSize(new Dimension(185, 50));
+        printReceiptButton.setFont(buttonPanelBtnsFont);
+        printReceiptButton.setBorderPainted(false);
         printReceiptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -332,7 +369,11 @@ public class RestaurantDashboard extends JFrame {
         });
 
         JButton cancelOrderButton = new JButton("Cancel Order");
-        cancelOrderButton.setBackground(Color.ORANGE);
+        cancelOrderButton.setBackground(checkoutColor);
+        cancelOrderButton.setForeground(whiteColor);
+        cancelOrderButton.setPreferredSize(new Dimension(185, 50));
+        cancelOrderButton.setFont(buttonPanelBtnsFont);
+        cancelOrderButton.setBorderPainted(false);
         cancelOrderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -362,7 +403,11 @@ public class RestaurantDashboard extends JFrame {
         });
 
         JButton exitButton = new JButton("Exit");
-        exitButton.setBackground(Color.YELLOW);
+        exitButton.setBackground(new Color(255, 204, 0));
+        exitButton.setForeground(whiteColor);
+        exitButton.setPreferredSize(new Dimension(185, 50));
+        exitButton.setFont(buttonPanelBtnsFont);
+        exitButton.setBorderPainted(false);
         exitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -371,24 +416,48 @@ public class RestaurantDashboard extends JFrame {
         });
 
         // Add buttons to the panel
-        buttonPanel.add(placeOrderButton);
-        buttonPanel.add(printReceiptButton);
-        buttonPanel.add(cancelOrderButton);
-        buttonPanel.add(exitButton);
+        GridBagConstraints g = new GridBagConstraints();
+        g.gridx = 0; // Align to the left
+        g.gridy = GridBagConstraints.RELATIVE; // Place components relative to each other
+        g.anchor = GridBagConstraints.SOUTHWEST; // Anchor buttons to the lower left
+        g.insets = new Insets(5, 5, 5, 5);
+        buttonPanel.add(placeOrderButton, g);
+        buttonPanel.add(printReceiptButton, g);
+        buttonPanel.add(cancelOrderButton, g);
+        buttonPanel.add(exitButton, g);
 
-        // Add the button panel to the right side of the checkout panel
-        checkoutPanel.add(buttonPanel, BorderLayout.EAST);
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.SOUTHWEST;
+        // gbc.weightx = 0;
+        // gbc.weighty = 1.0;
+        checkoutPanel.add(buttonPanel, gbc);
 
         return checkoutPanel;
     }
 
-    // Helper method to create spacers between buttons
+    // Helper method to style buttons in buttonPanel
+    // private JButton createCustomButton(String text, Color bgColor, Color fgColor,
+    // Font font) {
+    // JButton button = new JButton(text);
+    // button.setBackground(bgColor);
+    // button.setForeground(fgColor);
+    // button.setPreferredSize(new Dimension(185, 50));
+    // button.setFont(font);
+    // button.setBorderPainted(false); // Remove border
+    // return button;
+    // }
+    // TODO: IMPLEMENT LATER FOR BETTER CODE READABILITY
+
+    // Helper method to create spacers between buttons in main menu
     private Component createSpacer() {
         return Box.createRigidArea(new Dimension(0, 5));
     }
 
-    // Helper method to style buttons (buttonsPanel)
-    private void styleButton(JButton button, Color bgColor, Color fgColor, int fontSize, int height,
+    // Helper method to style main menu buttons
+    private void styleMenuButton(JButton button, Color bgColor, Color fgColor, int fontSize, int height,
             boolean isCheckout) {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setMargin(new Insets(5, 20, 5, 20));
