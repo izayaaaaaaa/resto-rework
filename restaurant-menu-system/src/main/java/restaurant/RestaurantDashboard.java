@@ -190,28 +190,57 @@ public class RestaurantDashboard extends JFrame {
         welcomePanel.setBackground(orangeColor);
 
         GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
-        constraints.anchor = GridBagConstraints.NORTH;
+        constraints.anchor = GridBagConstraints.CENTER;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel welcomeLabel = new JLabel("Welcome to Our Restaurant!");
+        // Invisible filler at the top
+        constraints.weighty = 1.0;
+        welcomePanel.add(Box.createVerticalGlue(), constraints);
+
+        // "Welcome to" label setup
+        JLabel welcomeLabel = new JLabel("Welcome to", SwingConstants.CENTER);
         welcomeLabel.setForeground(whiteColor);
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        welcomePanel.add(welcomeLabel);
-
+        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 85));
+        constraints.gridy = 1;
+        constraints.weighty = 0;
         welcomePanel.add(welcomeLabel, constraints);
 
-        jLabelDate = new JLabel();
-        jLabelTime = new JLabel();
+        // "Our Restaurant" label setup
+        JLabel restaurantLabel = new JLabel("Our Restaurant!", SwingConstants.CENTER);
+        restaurantLabel.setForeground(whiteColor);
+        restaurantLabel.setFont(new Font("Arial", Font.BOLD, 85));
+        constraints.gridy = 2;
+        constraints.insets = new Insets(20, 0, 20, 0);
+        welcomePanel.add(restaurantLabel, constraints);
+
+        // Reset insets to default
+        constraints.insets = new Insets(0, 0, 0, 0);
+
+        // Date label setup
+        jLabelDate = new JLabel("", SwingConstants.CENTER);
+        jLabelDate.setFont(new Font("Arial", Font.BOLD, 36));
+        jLabelDate.setForeground(whiteColor);
+        constraints.gridy = 3;
+        constraints.insets = new Insets(5, 0, 5, 0);
+        welcomePanel.add(jLabelDate, constraints);
+
+        // Time label setup
+        jLabelTime = new JLabel("", SwingConstants.CENTER);
+        jLabelTime.setFont(new Font("Arial", Font.BOLD, 36));
+        jLabelTime.setForeground(whiteColor);
+        constraints.gridy = 4;
+        welcomePanel.add(jLabelTime, constraints);
+
+        // Invisible filler at the bottom
+        constraints.gridy = 5;
+        constraints.weighty = 1.0;
+        welcomePanel.add(Box.createVerticalGlue(), constraints);
 
         // Display the date and time
         showDate();
         showTime();
-
-        constraints.anchor = GridBagConstraints.CENTER;
-        constraints.weighty = 1;
-
-        welcomePanel.add(jLabelDate, constraints);
-        welcomePanel.add(jLabelTime, constraints);
 
         return welcomePanel;
     }
