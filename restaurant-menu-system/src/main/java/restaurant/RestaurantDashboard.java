@@ -54,7 +54,16 @@ public class RestaurantDashboard extends JFrame {
         // Menu button
         JButton menuButton = new JButton("Menu");
         styleMenuButton(menuButton, whiteColor, orangeColor, 48, 150, false);
-        menuButton.addActionListener(e -> cardLayout.show(cardPanel, "Welcome"));
+        menuButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (activeCategoryButton != null) {
+                    activeCategoryButton.setBackground(orangeColor); // Reset the color
+                }
+                cardLayout.show(cardPanel, "Welcome");
+                activeCategoryButton = null;
+            }
+        });
         buttonPanel.add(menuButton);
         buttonPanel.add(createSpacer());
 
@@ -89,29 +98,7 @@ public class RestaurantDashboard extends JFrame {
         checkoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Order currentOrder = new Order("456489"); // Replace with actual logic for generating unique IDs
-
-                // Add selected items to the order
-                for (MenuItem selectedItem : selectedItems) {
-                    currentOrder.addItem(selectedItem);
-                }
-
-                // Create a receipt for the current order
-                Receipt receipt = new Receipt(currentOrder);
-                // Set the StyledDocument to orderBreakdown JTextArea to display centered text
-                StyledDocument receiptDoc = receipt.printReceipt();
-                orderBreakdown.setStyledDocument(receiptDoc);
-
-                // Calculate subtotal, VAT, and total
-                double subtotal = currentOrder.calculateTotal();
-                double VAT = receipt.getTax(subtotal);
-                double total = subtotal + VAT;
-
-                // Update the text fields
-                subtotalField.setText(String.format("%.2f", subtotal));
-                vatField.setText(String.format("%.2f", VAT));
-                totalPaymentField.setText(String.format("%.2f", total));
-
+                activeCategoryButton.setBackground(orangeColor);
                 cardLayout.show(cardPanel, "Checkout");
             }
         });
@@ -440,12 +427,15 @@ public class RestaurantDashboard extends JFrame {
                 if (selectedItems.isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Please select an item first before placing order.");
                 } else {
-                    // Create a new order and add selected items
                     Order currentOrder = new Order("456489"); // Replace with actual logic for generating unique IDs
                     for (MenuItem selectedItem : selectedItems) {
                         currentOrder.addItem(selectedItem);
                     }
                     Receipt receipt = new Receipt(currentOrder);
+
+                    // Generate the header of the receipt
+                    StyledDocument receiptDoc = receipt.printReceipt();
+                    orderBreakdown.setStyledDocument(receiptDoc);
 
                     double subtotal = currentOrder.calculateTotal();
                     double tax = receipt.getTax(subtotal);
@@ -485,8 +475,21 @@ public class RestaurantDashboard extends JFrame {
                     subtotalField.setText(String.format("%.2f", subtotal));
                     totalPaymentField.setText(String.format("%.2f", total));
 
-                    // Disable the 'Place Order' button to prevent duplicate orders
+                    // Clear the selected items and spinners
+                    // selectedItems.clear();
+                    // for (JSpinner spinner : quantitySpinners) {
+                    // spinner.setValue(0);
+                    // }
+
+                    // Re-enable the 'Place Order' button and clear fields for the next order
                     placeOrderButton.setEnabled(false);
+                    // subtotalField.setText("0");
+                    // vatField.setText("0");
+                    // totalPaymentField.setText("0");
+
+                    // Refresh the UI
+                    // cardPanel.revalidate();
+                    // cardPanel.repaint();
                 }
             }
         });
