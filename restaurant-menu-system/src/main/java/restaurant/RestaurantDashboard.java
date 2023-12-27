@@ -69,6 +69,8 @@ public class RestaurantDashboard extends JFrame {
             buttonPanel.add(createSpacer());
         }
 
+        buttonPanel.add(Box.createRigidArea(new Dimension(0, 40)));
+
         // Checkout button
         JButton checkoutButton = new JButton("Check Order");
         styleMenuButton(checkoutButton, checkoutColor, whiteColor, 24, 70, true);
