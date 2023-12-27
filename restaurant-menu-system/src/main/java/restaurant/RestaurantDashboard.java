@@ -33,6 +33,7 @@ public class RestaurantDashboard extends JFrame {
     private List<JSpinner> quantitySpinners = new ArrayList<>();
     private JLabel jLabelDate;
     private JLabel jLabelTime;
+    JButton activeCategoryButton = null;
 
     public RestaurantDashboard() {
         setUndecorated(true);
@@ -65,7 +66,14 @@ public class RestaurantDashboard extends JFrame {
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    // Check if there's an active button and reset its color
+                    if (activeCategoryButton != null) {
+                        activeCategoryButton.setBackground(orangeColor); // Reset the color
+                    }
+
                     cardLayout.show(cardPanel, category);
+                    activeCategoryButton = button; // Set the current button as active
+                    button.setBackground(new Color(255, 153, 51)); // Change the color to indicate activeness
                 }
             });
             buttonPanel.add(createSpacer());
