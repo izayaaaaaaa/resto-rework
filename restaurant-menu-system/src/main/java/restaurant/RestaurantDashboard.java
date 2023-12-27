@@ -217,8 +217,14 @@ public class RestaurantDashboard extends JFrame {
             JCheckBox purchaseCheckbox = new JCheckBox();
             purchaseCheckbox.setBackground(orangeColor);
             purchaseCheckbox.addActionListener(e -> {
-                if (purchaseCheckbox.isSelected() && item.getQuantity() > 0) {
-                    selectedItems.add(item);
+                if (purchaseCheckbox.isSelected()) {
+                    if (item.getQuantity() <= 0) {
+                        // Show an error message
+                        JOptionPane.showMessageDialog(null, "Quantity must be greater than zero to purchase.");
+                        purchaseCheckbox.setSelected(false); // Uncheck the checkbox
+                    } else {
+                        selectedItems.add(item);
+                    }
                 } else {
                     selectedItems.remove(item);
                 }
@@ -494,18 +500,25 @@ public class RestaurantDashboard extends JFrame {
         printReceiptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    boolean complete = orderBreakdown.print();
-                    if (complete) {
-                        // Inform the user that the print was successful
-                        JOptionPane.showMessageDialog(null, "Receipt Printed");
-                    } else {
-                        // Inform the user that the print was cancelled
-                        JOptionPane.showMessageDialog(null, "Printing Cancelled");
+                // Check if the orderBreakdown is empty
+                if (orderBreakdown.getText().trim().isEmpty()) {
+                    // Show an error message if it's empty
+                    JOptionPane.showMessageDialog(null,
+                            "Order breakdown is empty. Add items to the order before printing.");
+                } else {
+                    try {
+                        boolean complete = orderBreakdown.print();
+                        if (complete) {
+                            // Inform the user that the print was successful
+                            JOptionPane.showMessageDialog(null, "Receipt Printed");
+                        } else {
+                            // Inform the user that the print was cancelled
+                            JOptionPane.showMessageDialog(null, "Printing Cancelled");
+                        }
+                    } catch (PrinterException pe) {
+                        // Handle the printer exception
+                        JOptionPane.showMessageDialog(null, "Printing Failed: " + pe.getMessage());
                     }
-                } catch (PrinterException pe) {
-                    // Handle the printer exception
-                    JOptionPane.showMessageDialog(null, "Printing Failed: " + pe.getMessage());
                 }
             }
         });
