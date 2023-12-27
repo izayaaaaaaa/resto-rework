@@ -1,4 +1,3 @@
-// TODO: IMPLEMENT LATER FOR BETTER CODE READABILITY (line 447)
 package restaurant;
 
 import javax.swing.*;
@@ -13,6 +12,7 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 public class RestaurantDashboard extends JFrame {
     private CardLayout cardLayout = new CardLayout();
@@ -70,7 +70,7 @@ public class RestaurantDashboard extends JFrame {
         }
 
         // Checkout button
-        JButton checkoutButton = new JButton("Checkout");
+        JButton checkoutButton = new JButton("Check Order");
         styleMenuButton(checkoutButton, checkoutColor, whiteColor, 24, 70, true);
         checkoutButton.addActionListener(new ActionListener() {
             @Override
@@ -110,9 +110,6 @@ public class RestaurantDashboard extends JFrame {
         // Checkout card
         cardPanel.add(createCheckoutPanel(), "Checkout");
 
-        // Set the welcome card as the initial view
-        // cardLayout.show(cardPanel, "Welcome");
-
         add(buttonPanel, BorderLayout.WEST);
         add(cardPanel, BorderLayout.CENTER);
 
@@ -124,15 +121,29 @@ public class RestaurantDashboard extends JFrame {
     }
 
     private JPanel createItemsPanel(List<MenuItem> items) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(0, 2, 10, 10)); // Adjust grid layout rows and columns as needed
-        panel.setBackground(orangeColor);
+        // Set preferred size for itemPanels
+        Dimension itemPanelSize = new Dimension(285, 295);
+
+        // GridLayout with 2 rows and 2 columns for a total of 4 components
+        JPanel itemsGridPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        itemsGridPanel.setPreferredSize(new Dimension(2 * (285 + 10), 2 * (295 + 10)));
+        itemsGridPanel.setBackground(orangeColor);
 
         for (MenuItem item : items) {
             JPanel itemPanel = new JPanel();
             itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
-            itemPanel.setBackground(whiteColor);
-            itemPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+            itemPanel.setBackground(orangeColor);
+            itemPanel.setPreferredSize(itemPanelSize);
+            itemPanel.setMaximumSize(itemPanelSize);
+            itemPanel.setMinimumSize(itemPanelSize);
+
+            // Custom titled border with white title
+            TitledBorder titledBorder = BorderFactory.createTitledBorder(item.getName());
+            titledBorder.setTitleJustification(TitledBorder.CENTER);
+            titledBorder.setTitlePosition(TitledBorder.TOP);
+            titledBorder.setTitleFont(new Font("Arial", Font.BOLD, 24));
+            titledBorder.setTitleColor(Color.WHITE); // Set the title color to white
+            itemPanel.setBorder(titledBorder);
 
             // Load, resize, and add the image
             try {
@@ -143,34 +154,50 @@ public class RestaurantDashboard extends JFrame {
                 itemPanel.add(imageLabel);
             } catch (IOException e) {
                 e.printStackTrace();
-                // Handle the exception or display a placeholder image
             }
 
-            // Add the name label
-            JLabel nameLabel = new JLabel(item.getName() + " (" + item.getPrice() + ")", SwingConstants.CENTER);
-            nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
-            nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            itemPanel.add(nameLabel);
+            // Create a new JPanel for details (price, quantity, purchase)
+            JPanel detailsPanel = new JPanel(new GridLayout(3, 2)); // 3 rows, 2 columns
+            detailsPanel.setBackground(orangeColor);
+            detailsPanel.setBorder(BorderFactory.createEmptyBorder(0, 75, 0, 10));
+
+            // Create and add the "Price:" label
+            JLabel priceTextLabel = new JLabel("Price: ");
+            priceTextLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+            priceTextLabel.setForeground(whiteColor);
+            detailsPanel.add(priceTextLabel);
+
+            // Create and add the actual price label
+            JLabel actualPriceLabel = new JLabel(String.format("%.2f", item.getPrice()));
+            actualPriceLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+            actualPriceLabel.setForeground(whiteColor);
+            detailsPanel.add(actualPriceLabel);
 
             // Quantity panel
-            JPanel quantityPanel = new JPanel();
-            quantityPanel.setLayout(new BoxLayout(quantityPanel, BoxLayout.X_AXIS));
-            quantityPanel.setBackground(whiteColor);
             JLabel quantityLabel = new JLabel("Quantity: ");
-            JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1)); // Spinner with a range from
-                                                                                           // 0 to 100 and step 1
-            quantitySpinners.add(quantitySpinner); // Add the spinner to the list
+            quantityLabel.setForeground(whiteColor);
+
+            JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
+            quantitySpinner.setMaximumSize(new Dimension(50, 20));
+            quantitySpinners.add(quantitySpinner);
             quantitySpinner.addChangeListener(e -> {
                 item.setQuantity((Integer) quantitySpinner.getValue());
             });
-            quantityPanel.add(quantityLabel);
-            quantityPanel.add(quantitySpinner);
-            itemPanel.add(quantityPanel);
+
+            // Wrapper panel for quantitySpinner
+            JPanel quantitySpinnerWrapper = new JPanel();
+            quantitySpinnerWrapper.setLayout(new FlowLayout(FlowLayout.LEFT)); // Or use BoxLayout
+            quantitySpinnerWrapper.setBackground(orangeColor);
+            quantitySpinnerWrapper.add(quantitySpinner);
+
+            detailsPanel.add(quantityLabel);
+            detailsPanel.add(quantitySpinnerWrapper);
 
             // Purchase checkbox
-            JCheckBox purchaseCheckbox = new JCheckBox("Purchase");
-            purchaseCheckbox.setBackground(whiteColor);
-            purchaseCheckbox.setAlignmentX(Component.CENTER_ALIGNMENT);
+            JLabel purchaseLabel = new JLabel("Purchase: ");
+            purchaseLabel.setForeground(whiteColor);
+            JCheckBox purchaseCheckbox = new JCheckBox();
+            purchaseCheckbox.setBackground(orangeColor);
             purchaseCheckbox.addActionListener(e -> {
                 if (purchaseCheckbox.isSelected() && item.getQuantity() > 0) {
                     selectedItems.add(item);
@@ -178,11 +205,24 @@ public class RestaurantDashboard extends JFrame {
                     selectedItems.remove(item);
                 }
             });
-            itemPanel.add(purchaseCheckbox);
+            detailsPanel.add(purchaseLabel);
+            detailsPanel.add(purchaseCheckbox);
 
-            panel.add(itemPanel);
+            itemPanel.add(detailsPanel);
+
+            itemsGridPanel.add(itemPanel);
         }
-        return panel;
+
+        // Intermediate panel with GridBagLayout for centering
+        JPanel intermediatePanel = new JPanel(new GridBagLayout());
+        intermediatePanel.setBackground(orangeColor);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.BOTH;
+        intermediatePanel.add(itemsGridPanel, gbc);
+
+        return intermediatePanel;
     }
 
     private JPanel createWelcomePanel() {
@@ -406,8 +446,6 @@ public class RestaurantDashboard extends JFrame {
         cancelOrderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // ... existing cancellation logic ...
-
                 // Reset all spinners
                 for (JSpinner spinner : quantitySpinners) {
                     spinner.setValue(0);
@@ -460,8 +498,6 @@ public class RestaurantDashboard extends JFrame {
         gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.SOUTHWEST;
-        // gbc.weightx = 0;
-        // gbc.weighty = 1.0;
         checkoutPanel.add(buttonPanel, gbc);
 
         return checkoutPanel;
