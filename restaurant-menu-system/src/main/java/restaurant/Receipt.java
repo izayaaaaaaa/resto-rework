@@ -15,7 +15,7 @@ public class Receipt {
 
     public String printReceipt() {
         StringBuilder receipt = new StringBuilder();
-        receipt.append("\t\t\t\tRESTAURANT\n")
+        receipt.append("\tRESTAURANT\n")
                 .append("\tMacArthur Highway Brgy.\n")
                 .append("\tSan Roque, Tarlac City\n")
                 .append("\tTIN: 000-1234-5678\n")

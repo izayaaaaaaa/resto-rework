@@ -326,7 +326,7 @@ public class RestaurantDashboard extends JFrame {
         orderBreakdown.setEditable(false);
         orderBreakdown.setLineWrap(true);
         orderBreakdown.setWrapStyleWord(true);
-        orderBreakdown.setBorder(BorderFactory.createLineBorder(paymentColor, 5));
+        orderBreakdown.setBorder(BorderFactory.createLineBorder(paymentColor, 15));
         JScrollPane scrollPane = new JScrollPane(orderBreakdown);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
@@ -335,8 +335,9 @@ public class RestaurantDashboard extends JFrame {
         contentPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Panel for VAT, Subtotal, and Total Payment
-        JPanel paymentPanel = new JPanel(new GridLayout(3, 2, 5, 5));
+        JPanel paymentPanel = new JPanel(new GridLayout(3, 2, 20, 5));
         paymentPanel.setBackground(paymentColor);
+        paymentPanel.setBorder(BorderFactory.createEmptyBorder(5, 30, 5, 30));
 
         JLabel vatLabel = new JLabel("VAT (₱):");
         vatField = new JTextField("0", 10);
