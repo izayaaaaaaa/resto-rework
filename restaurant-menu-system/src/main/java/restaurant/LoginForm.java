@@ -46,7 +46,7 @@ public class LoginForm extends JFrame {
 
         gbc.gridx = 1;
         gbc.gridy = 1;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridwidth = 1;
         usernameField = new JTextField(20);
         usernameField.setFont(new Font("Arial", Font.PLAIN, 14));
         usernameField.setBorder(BorderFactory.createCompoundBorder(
@@ -57,6 +57,7 @@ public class LoginForm extends JFrame {
         // Invisible label for alignment
         gbc.gridx = 2;
         gbc.gridy = 1;
+        gbc.gridwidth = 1;
         add(new JLabel(""), gbc);
 
         // Password Label and Field
@@ -69,7 +70,7 @@ public class LoginForm extends JFrame {
 
         gbc.gridx = 1;
         gbc.gridy = 2;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridwidth = 1;
         passwordField = new JPasswordField(20);
         passwordField.setFont(new Font("Arial", Font.PLAIN, 14));
         passwordField.setBorder(BorderFactory.createCompoundBorder(
@@ -82,11 +83,11 @@ public class LoginForm extends JFrame {
         gbc.gridy = 2;
         gbc.gridwidth = 1;
         viewPasswordButton = new JButton(eyeClosedIcon);
-        styleIconButton(viewPasswordButton);
         viewPasswordButton.setBorderPainted(false);
+        viewPasswordButton.setBackground(Color.WHITE);
         viewPasswordButton.setContentAreaFilled(false);
         viewPasswordButton.setFocusPainted(false);
-        viewPasswordButton.setOpaque(false);
+        viewPasswordButton.setOpaque(true);
         viewPasswordButton.addActionListener(e -> togglePasswordVisibility());
         add(viewPasswordButton, gbc);
 
@@ -130,6 +131,11 @@ public class LoginForm extends JFrame {
             passwordField.setEchoChar('*');
             viewPasswordButton.setIcon(eyeClosedIcon);
         }
+        // Refresh the password field and the button
+        passwordField.repaint();
+        passwordField.revalidate();
+        viewPasswordButton.repaint();
+        viewPasswordButton.revalidate();
     }
 
     private void authenticate(String username, String password) {
@@ -146,14 +152,6 @@ public class LoginForm extends JFrame {
         } else {
             JOptionPane.showMessageDialog(this, "Invalid credentials", "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    private void styleIconButton(JButton button) {
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        button.setOpaque(false);
-        button.addActionListener(e -> togglePasswordVisibility());
     }
 
     private void styleButton(JButton button, Color backgroundColor, Color textColor) {

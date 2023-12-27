@@ -2,6 +2,7 @@ package restaurant;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class Order {
                 details.append(index++)
                         .append(". ")
                         .append(item.getName())
-                        .append("\t\t")
+                        .append("\t\t\t")
                         .append(String.format("%.2f", item.getPrice() * item.getQuantity()))
                         .append("\n");
             }
@@ -52,8 +53,9 @@ public class Order {
     }
 
     // Getter for orderTime
-    public LocalTime getOrderTime() {
-        return orderTime;
+    public String getOrderTime() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
+        return orderTime.format(formatter);
     }
 
     // Getter for orderId

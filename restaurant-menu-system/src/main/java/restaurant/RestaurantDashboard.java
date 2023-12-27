@@ -13,6 +13,10 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 public class RestaurantDashboard extends JFrame {
     private CardLayout cardLayout = new CardLayout();
@@ -22,7 +26,7 @@ public class RestaurantDashboard extends JFrame {
     private Color checkoutColor = new Color(239, 23, 23);
     private Color paymentColor = new Color(204, 204, 204);
     private List<MenuItem> selectedItems = new ArrayList<>();
-    private JTextArea orderBreakdown = new JTextArea();
+    private JTextPane orderBreakdown = new JTextPane();
     private JTextField vatField;
     private JTextField subtotalField;
     private JTextField totalPaymentField;
@@ -86,7 +90,9 @@ public class RestaurantDashboard extends JFrame {
 
                 // Create a receipt for the current order
                 Receipt receipt = new Receipt(currentOrder);
-                orderBreakdown.setText(receipt.printReceipt());
+                // Set the StyledDocument to orderBreakdown JTextArea to display centered text
+                StyledDocument receiptDoc = receipt.printReceipt();
+                orderBreakdown.setStyledDocument(receiptDoc);
 
                 // Calculate subtotal, VAT, and total
                 double subtotal = currentOrder.calculateTotal();
@@ -165,18 +171,19 @@ public class RestaurantDashboard extends JFrame {
 
             // Create and add the "Price:" label
             JLabel priceTextLabel = new JLabel("Price: ");
-            priceTextLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+            priceTextLabel.setFont(new Font("Times New Roman", Font.BOLD, 13));
             priceTextLabel.setForeground(whiteColor);
             detailsPanel.add(priceTextLabel);
 
             // Create and add the actual price label
             JLabel actualPriceLabel = new JLabel(String.format("%.2f", item.getPrice()));
-            actualPriceLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+            actualPriceLabel.setFont(new Font("Times New Roman", Font.BOLD, 13));
             actualPriceLabel.setForeground(whiteColor);
             detailsPanel.add(actualPriceLabel);
 
             // Quantity panel
             JLabel quantityLabel = new JLabel("Quantity: ");
+            quantityLabel.setFont(new Font("Times New Roman", Font.BOLD, 13));
             quantityLabel.setForeground(whiteColor);
 
             JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
@@ -198,6 +205,7 @@ public class RestaurantDashboard extends JFrame {
             // Purchase checkbox
             JLabel purchaseLabel = new JLabel("Purchase: ");
             purchaseLabel.setForeground(whiteColor);
+            purchaseLabel.setFont(new Font("Times New Roman", Font.BOLD, 13));
             JCheckBox purchaseCheckbox = new JCheckBox();
             purchaseCheckbox.setBackground(orangeColor);
             purchaseCheckbox.addActionListener(e -> {
@@ -316,23 +324,41 @@ public class RestaurantDashboard extends JFrame {
         fillerPanel.setBackground(whiteColor);
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 2;
         gbc.gridwidth = 1;
+        gbc.gridheight = 2;
         checkoutPanel.add(fillerPanel, gbc);
 
         // Panel to hold the order breakdown and paymentPanel
-        JPanel contentPanel = new JPanel(new BorderLayout());
+        JPanel contentPanel = new JPanel(new GridBagLayout());
+        contentPanel.setBackground(whiteColor);
 
         // ScrollPane for order breakdown
+        // orderBreakdown.setLineWrap(true);
+        // orderBreakdown.setWrapStyleWord(true);
+
+        // ScrollPane for orderBreakdown
         orderBreakdown.setEditable(false);
-        orderBreakdown.setLineWrap(true);
-        orderBreakdown.setWrapStyleWord(true);
+        orderBreakdown.setPreferredSize(new Dimension(395, 695));
         orderBreakdown.setBorder(BorderFactory.createLineBorder(paymentColor, 15));
         JScrollPane scrollPane = new JScrollPane(orderBreakdown);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         scrollPane.setPreferredSize(new Dimension(395, 695));
         scrollPane.setMinimumSize(new Dimension(395, 695));
-        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder()); // Set an empty border
+
+        // Adding scrollPane to contentPanel
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridheight = 2; // Spanning two rows
+        gbc.weightx = 1.0;
+        gbc.weighty = 2.0; // Assign more weight to the scrollPane
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(10, 10, 0, 10); // Padding (Top, Left, Bottom, Right)
+        contentPanel.add(scrollPane, gbc);
 
         // Panel for VAT, Subtotal, and Total Payment
         JPanel paymentPanel = new JPanel(new GridLayout(3, 2, 20, 5));
@@ -358,16 +384,32 @@ public class RestaurantDashboard extends JFrame {
         paymentPanel.add(totalPaymentLabel);
         paymentPanel.add(totalPaymentField);
 
-        contentPanel.add(paymentPanel, BorderLayout.SOUTH);
+        // Adding paymentPanel to contentPanel
+        gbc.gridx = 0;
+        gbc.gridy = 2; // Start at row 2, after the scrollPane
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridheight = 1; // Span only one row
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0; // Assign less weight compared to the scrollPane
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.SOUTH;
+        gbc.insets = new Insets(0, 10, 10, 10); // Padding (Top, Left, Bottom, Right)
+        contentPanel.add(paymentPanel, gbc);
 
+        // Adding contentPanel to checkoutPanel
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
+        gbc.gridheight = GridBagConstraints.REMAINDER;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(10, 10, 10, 0); // Padding for the entire contentPanel
         checkoutPanel.add(contentPanel, gbc);
 
         // Panel for buttons
         JPanel buttonPanel = new JPanel(new GridBagLayout());
-        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBackground(whiteColor);
 
         // Custom font for buttons
         Font buttonPanelBtnsFont = new Font("Arial", Font.BOLD, 24);
@@ -396,13 +438,33 @@ public class RestaurantDashboard extends JFrame {
                     double total = subtotal + tax;
 
                     // Append tax, subtotal, and total to the JTextArea
-                    orderBreakdown.append("\n \t\t==========================\n"
-                            + "\t\t Tax: \t" + String.format("%.2f", tax) + "\n"
-                            + "\t\t Subtotal: \t" + String.format("%.2f", subtotal) + "\n"
-                            + "\t\t Total: \t" + String.format("%.2f", total) + "\n"
-                            + " ===================================================\n\n"
-                            + "\t            OFFICIAL RECEIPT\n"
-                            + "\t THANK YOU AND COME AGAIN");
+                    try {
+                        StyledDocument doc = orderBreakdown.getStyledDocument();
+
+                        // Define the center alignment attribute set
+                        SimpleAttributeSet center = new SimpleAttributeSet();
+                        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+                        StyleConstants.setFontFamily(center, "Arial");
+                        StyleConstants.setFontSize(center, 12);
+
+                        // Append tax, subtotal, and total to the JTextArea
+                        String footer = "\n \t\t==============================\n"
+                                + "\t\t Tax: \t" + String.format("%.2f", tax) + "\n"
+                                + "\t\t Subtotal: \t" + String.format("%.2f", subtotal) + "\n"
+                                + "\t\t Total: \t" + String.format("%.2f", total) + "\n"
+                                + " ===================================================\n\n";
+                        doc.insertString(doc.getLength(), footer, null);
+
+                        // Append and center the 'Official Receipt' and 'Thank You' text
+                        String centeredText = "\tOFFICIAL RECEIPT\n"
+                                + "\tTHANK YOU AND COME AGAIN";
+                        doc.insertString(doc.getLength(), centeredText, null);
+                        int start = doc.getLength() - centeredText.length();
+                        int end = doc.getLength();
+                        doc.setParagraphAttributes(start, end - start, center, false);
+                    } catch (BadLocationException error) {
+                        error.printStackTrace();
+                    }
 
                     // Update the text fields
                     vatField.setText(String.format("%.2f", tax));
@@ -491,6 +553,7 @@ public class RestaurantDashboard extends JFrame {
         g.gridy = GridBagConstraints.RELATIVE; // Place components relative to each other
         g.anchor = GridBagConstraints.SOUTHWEST; // Anchor buttons to the lower left
         g.insets = new Insets(5, 5, 5, 5);
+        g.fill = GridBagConstraints.HORIZONTAL;
         buttonPanel.add(placeOrderButton, g);
         buttonPanel.add(printReceiptButton, g);
         buttonPanel.add(cancelOrderButton, g);
@@ -505,19 +568,6 @@ public class RestaurantDashboard extends JFrame {
 
         return checkoutPanel;
     }
-
-    // Helper method to style buttons in buttonPanel
-    // private JButton createCustomButton(String text, Color bgColor, Color fgColor,
-    // Font font) {
-    // JButton button = new JButton(text);
-    // button.setBackground(bgColor);
-    // button.setForeground(fgColor);
-    // button.setPreferredSize(new Dimension(185, 50));
-    // button.setFont(font);
-    // button.setBorderPainted(false); // Remove border
-    // return button;
-    // }
-    // TODO: IMPLEMENT LATER FOR BETTER CODE READABILITY
 
     // Helper method to create spacers between buttons in main menu
     private Component createSpacer() {
