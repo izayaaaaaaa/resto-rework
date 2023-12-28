@@ -98,7 +98,9 @@ public class RestaurantDashboard extends JFrame {
         checkoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                activeCategoryButton.setBackground(orangeColor);
+                if (activeCategoryButton != null) {
+                    activeCategoryButton.setBackground(orangeColor);
+                }
                 cardLayout.show(cardPanel, "Checkout");
             }
         });
