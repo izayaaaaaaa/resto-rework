@@ -34,6 +34,10 @@ public class RestaurantDashboard extends JFrame {
     private JLabel jLabelDate;
     private JLabel jLabelTime;
     JButton activeCategoryButton = null;
+    Order currentOrder = new Order("456489");
+    Receipt receipt = new Receipt(currentOrder);
+    StyledDocument receiptDoc;
+    private List<JCheckBox> purchaseCheckboxes = new ArrayList<>();
 
     public RestaurantDashboard() {
         setUndecorated(true);
@@ -100,6 +104,25 @@ public class RestaurantDashboard extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (activeCategoryButton != null) {
                     activeCategoryButton.setBackground(orangeColor);
+                }
+
+                // If order is not empty
+                if (!selectedItems.isEmpty()) {
+                    currentOrder.resetOrder(); // Reset the order
+                    // Add the selected items to the current order
+                    for (MenuItem selectedItem : selectedItems) {
+                        currentOrder.addItem(selectedItem);
+                    }
+
+                    // output on log the list of current order items and their quantity
+                    System.out.println("Current Order Items: ");
+                    for (MenuItem item : currentOrder.getOrderItems()) {
+                        System.out.println(item.getName() + " " + item.getQuantity());
+                    }
+
+                    // Generate the header and order then add it the receipt pane
+                    receiptDoc = receipt.printHeader_Order();
+                    orderBreakdown.setStyledDocument(receiptDoc);
                 }
                 cardLayout.show(cardPanel, "Checkout");
             }
@@ -203,8 +226,10 @@ public class RestaurantDashboard extends JFrame {
             JLabel purchaseLabel = new JLabel("Purchase: ");
             purchaseLabel.setForeground(whiteColor);
             purchaseLabel.setFont(new Font("Times New Roman", Font.BOLD, 13));
+
             JCheckBox purchaseCheckbox = new JCheckBox();
             purchaseCheckbox.setBackground(orangeColor);
+            purchaseCheckboxes.add(purchaseCheckbox);
             purchaseCheckbox.addActionListener(e -> {
                 if (purchaseCheckbox.isSelected()) {
                     if (item.getQuantity() <= 0) {
@@ -216,6 +241,12 @@ public class RestaurantDashboard extends JFrame {
                     }
                 } else {
                     selectedItems.remove(item);
+                }
+
+                // output on log the list of current selectItems and their quantity
+                System.out.println("Selected Items: ");
+                for (MenuItem selectedItem : selectedItems) {
+                    System.out.println(selectedItem.getName() + " " + selectedItem.getQuantity());
                 }
             });
             detailsPanel.add(purchaseLabel);
@@ -429,16 +460,7 @@ public class RestaurantDashboard extends JFrame {
                 if (selectedItems.isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Please select an item first before placing order.");
                 } else {
-                    Order currentOrder = new Order("456489"); // Replace with actual logic for generating unique IDs
-                    for (MenuItem selectedItem : selectedItems) {
-                        currentOrder.addItem(selectedItem);
-                    }
-                    Receipt receipt = new Receipt(currentOrder);
-
-                    // Generate the header of the receipt
-                    StyledDocument receiptDoc = receipt.printReceipt();
-                    orderBreakdown.setStyledDocument(receiptDoc);
-
+                    // Calculate the subtotal, tax, and total
                     double subtotal = currentOrder.calculateTotal();
                     double tax = receipt.getTax(subtotal);
                     double total = subtotal + tax;
@@ -477,21 +499,7 @@ public class RestaurantDashboard extends JFrame {
                     subtotalField.setText(String.format("%.2f", subtotal));
                     totalPaymentField.setText(String.format("%.2f", total));
 
-                    // Clear the selected items and spinners
-                    // selectedItems.clear();
-                    // for (JSpinner spinner : quantitySpinners) {
-                    // spinner.setValue(0);
-                    // }
-
-                    // Re-enable the 'Place Order' button and clear fields for the next order
                     placeOrderButton.setEnabled(false);
-                    // subtotalField.setText("0");
-                    // vatField.setText("0");
-                    // totalPaymentField.setText("0");
-
-                    // Refresh the UI
-                    // cardPanel.revalidate();
-                    // cardPanel.repaint();
                 }
             }
         });
@@ -540,6 +548,11 @@ public class RestaurantDashboard extends JFrame {
                 // Reset all spinners
                 for (JSpinner spinner : quantitySpinners) {
                     spinner.setValue(0);
+                }
+
+                // Uncheck all purchase checkboxes
+                for (JCheckBox checkbox : purchaseCheckboxes) {
+                    checkbox.setSelected(false);
                 }
 
                 // Clear the selected items list

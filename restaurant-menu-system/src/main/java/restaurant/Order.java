@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Order {
-    private List<MenuItem> orderItems;
+    public List<MenuItem> orderItems;
     private String orderId;
     private LocalDate orderDate;
     private LocalTime orderTime;
@@ -45,6 +45,16 @@ public class Order {
             }
         }
         return details.toString();
+    }
+
+    // reset the order
+    public void resetOrder() {
+        orderItems.clear();
+    }
+
+    // getter for orderItems
+    public List<MenuItem> getOrderItems() {
+        return orderItems;
     }
 
     // Getter for orderDate

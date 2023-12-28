@@ -17,7 +17,7 @@ public class Receipt {
         this.subtotal = this.total - this.VAT;
     }
 
-    public StyledDocument printReceipt() {
+    public StyledDocument printHeader_Order() {
         // Create a new StyledDocument
         StyledDocument doc = new DefaultStyledDocument();
 
